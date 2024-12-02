@@ -11,20 +11,16 @@ fun main() {
 }
 
 fun partialSafe(levels: List<Int>): Boolean {
-    //val diffs = levels.zipWithNext {a, b -> a - b}
-    //val unifiedLevels = if (diffs.count { it < 0 } > diffs.count { it > 0 }) levels.reversed() else levels
-    val options = levels.mapIndexed { index1, i ->
-        levels.filterIndexed { index2, i -> index1 != index2 }
+    val options = levels.indices.map { index1 ->
+        levels.filterIndexed { index2, _ -> index1 != index2 }
     }
     return options.any { safe(it) }
 }
 
 fun safe(levels: List<Int>): Boolean {
     val diffs = levels.zipWithNext {a, b -> a - b}
-    if (diffs.all { it > 0 } || diffs.all { it < 0}) {
-        if (diffs.all { abs(it) <= 3 }) {
-            return true;
-        }
+    if (!(diffs.all { it > 0 } || diffs.all { it < 0})) {
+        return false
     }
-    return false;
+    return diffs.all { abs(it) <= 3 };
 }
