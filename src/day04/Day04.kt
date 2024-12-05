@@ -1,5 +1,6 @@
 package day04
 
+import utils.Vector
 import java.io.File
 
 fun main() {
@@ -43,9 +44,9 @@ fun rotate(mat: List<String>): List<String> {
 }
 
 fun diags(mat: List<String>): List<String> {
-    fun safeGet(x: Int, y: Int) = mat.getOrNull(y)?.getOrNull(x)
-    val startPositions = mat[0].indices.map { it to 0 } + (1..mat.lastIndex).map { 0 to it }
-    return startPositions.map { (sx, sy) ->
-        generateSequence(sx to sy) { (x, y) -> x+1 to y+1 }.map { (x, y) -> safeGet(x, y) }.takeWhile { it != null }.joinToString("")
+    fun safeGet(p: Vector) = mat.getOrNull(p.intY)?.getOrNull(p.intX)
+    val startPositions = mat[0].indices.map { Vector(it, 0) } + (1..mat.lastIndex).map { Vector(0, it) }
+    return startPositions.map { start ->
+        generateSequence(start) { it + Vector(1,1) }.map(::safeGet).takeWhile { it != null }.joinToString("")
     }
 }
