@@ -4,64 +4,11 @@ import java.io.File
 
 fun main() {
     val lines = File("src/day04/input.txt").readLines()
-    //println(diags(lines).joinToString("\n"))
-    //println(rotate(rotate(rotate(lines))).joinToString("\n"))
-    //println(xmases(rotate(rotate(rotate(lines)))))
-    //println()
-    //println(lines.joinToString("\n"))
-    var total = 0;
-    println("CASE 1")
-    var case = lines
-    //println(case.joinToString("\n"))
-    println(xmases(case))
-    total += xmases(case)
-    println("CASE 2")
-    case = diags(lines)
-    //println(case.joinToString("\n"))
-    println(xmases(case))
-    total += xmases(case)
-    println("CASE 3")
-    case = rotate(lines)
-    //println(case.joinToString("\n"))
-    println(xmases(case))
-    total += xmases(case)
-    println("CASE 4")
-    case = diags(rotate(lines)) //???
-    //println(case.joinToString("\n"))
-    println(xmases(case))
-    total += xmases(case)
-    println("CASE 5")
-    case = rotate(rotate(lines))
-    //println(case.joinToString("\n"))
-    println(xmases(case))
-    total += xmases(case)
-    println("CASE 6")
-    case = diags(rotate(rotate(lines))) //???
-    //println(case.joinToString("\n"))
-    println(xmases(case))
-    total += xmases(case)
-    println("CASE 7")
-    case = rotate(rotate(rotate(lines))) // ??? 0
-    //println(case.joinToString("\n"))
-    println(xmases(case))
-    total += xmases(case)
-    println("CASE 8")
-    case = diags(rotate(rotate(rotate(lines)))) //???
-    //println(case.joinToString("\n"))
-    println(xmases(case))
-    total += xmases(case)
-    println(total)
+    val rotations = generateSequence(lines, ::rotate).take(4)
+    println("PART 1")
+    rotations.sumOf { xmases(it) + xmases(diags(it)) }.also { println(it) }
     println("PART 2")
-    //println(xdashmases(lines))
-    //println(lines.joinToString("\n"))
-    println(
-        listOf(
-            xdashmases(lines),
-            xdashmases(rotate(lines)),
-            xdashmases(rotate(rotate(lines))),
-            xdashmases(rotate(rotate(rotate(lines)))),
-        ).sum()
-    )
+    rotations.sumOf { xdashmases(it) }.also { println(it) }
 }
 
 fun xdashmases(mat: List<String>): Int {
@@ -96,29 +43,9 @@ fun rotate(mat: List<String>): List<String> {
 }
 
 fun diags(mat: List<String>): List<String> {
-    val output: MutableList<String> = mutableListOf()
-    for (yStart in mat.indices) {
-        var dx = 0;
-        var dy = 0;
-        var str = ""
-        while (yStart + dy < mat.size && dx < mat[0].length) {
-            str += mat[yStart + dy][dx];
-            dx++;
-            dy++;
-        }
-        output.add(str)
+    fun safeGet(x: Int, y: Int) = mat.getOrNull(y)?.getOrNull(x)
+    val startPositions = mat[0].indices.map { it to 0 } + (1..mat.lastIndex).map { 0 to it }
+    return startPositions.map { (sx, sy) ->
+        generateSequence(sx to sy) { (x, y) -> x+1 to y+1 }.map { (x, y) -> safeGet(x, y) }.takeWhile { it != null }.joinToString("")
     }
-    for (xStart in mat[0].indices) {
-        if (xStart == 0) continue;
-        var dx = 0;
-        var dy = 0;
-        var str = ""
-        while (dy < mat.size && xStart + dx < mat[0].length) {
-            str += mat[dy][xStart + dx];
-            dx++;
-            dy++;
-        }
-        output.add(str)
-    }
-    return output
 }
