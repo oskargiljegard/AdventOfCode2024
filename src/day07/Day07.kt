@@ -2,33 +2,32 @@ package day07
 
 import java.io.File
 
+typealias Op = (Long, Long) -> Long
+
 fun main() {
     val lines = File("src/day07/input.txt").readLines()
     val totals = lines.map { it.substringBefore(": ").toLong() }
-    val nums = lines.map { line -> line.substringAfter(": ").split(" ").map { it.toLong() } }
-    totals.zip(nums).filter { (t, n) -> isValid(t, n) }.map { (t, n) -> t }.sum().also { println(it) }
+    val numsList = lines.map { line -> line.substringAfter(": ").split(" ").map { it.toLong() } }
+    val totalsWithNums = totals.zip(numsList)
+    val ops1: List<Op> = listOf(
+        { a, b -> a * b },
+        { a, b -> a + b }
+    )
+    val ops2 = ops1 + listOf { a, b -> "$a$b".toLong() }
+    totalsWithNums.filter { (t, n) -> possibleSums(n, ops1).any { it == t } }.sumOf { (t, n) -> t }.also { println(it) }
+    totalsWithNums.filter { (t, n) -> possibleSums(n, ops2).any { it == t } }.sumOf { (t, n) -> t }.also { println(it) }
 }
 
-fun possibleSums(nums: List<Long>): Sequence<Long> = sequence {
+fun possibleSums(nums: List<Long>, ops: List<Op>): Sequence<Long> = sequence {
     if (nums.size < 2) {
         throw Error()
     }
-    val (n1, n2) = nums
+    val (a, b) = nums
     val rest = nums.drop(2)
-    val s1 = n1*n2
-    val s2 = n1+n2
-    val s3 = "$n1$n2".toLong()
+    val results = ops.map { op -> op(a, b) }
     if (rest.isEmpty()) {
-        yield(s1)
-        yield(s2)
-        yield(s3)
+        yieldAll(results)
     } else {
-        yieldAll(possibleSums(listOf(s1) + rest))
-        yieldAll(possibleSums(listOf(s2) + rest))
-        yieldAll(possibleSums(listOf(s3) + rest))
+        yieldAll(results.flatMap { r -> possibleSums(listOf(r) + rest, ops) })
     }
-}
-
-fun isValid(total: Long, nums: List<Long>): Boolean {
-    return possibleSums(nums).any { it == total }
 }
