@@ -84,7 +84,7 @@ inline fun <reified T> String.asGridWithSeparators(
 
 inline fun <I, reified T> List<List<I>>.toGrid(transform: (I) -> T): Grid<T> {
     if (isEmpty()) return Grid()
-    val size = Vector(this.size, this[0].size)
+    val size = Vector(this[0].size, this.size)
     val grid = Array(size.intY) { y ->
         require(this[y].size == size.intX) { "Inconsistent grid size: ${this[y].size} != $size" }
         Array(size.intX) { x -> transform(this[y][x]) }
