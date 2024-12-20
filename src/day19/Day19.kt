@@ -29,7 +29,7 @@ fun main() {
 
     var possible = 0
     for ((attempts, d) in designs.withIndex()) {
-        if (buildDesign(d) != null) {
+        if (buildDesign(d)) {
             possible++
         }
         println(attempts)
@@ -48,16 +48,17 @@ fun everyDesign(length: Int): Sequence<String> = sequence {
     }
 }
 
-fun buildDesign(design: String): List<String>? {
-    if (design.isEmpty()) return emptyList()
-    val possibleTowels = towelMap[design.take(8)] ?: return null
+fun buildDesign(design: String): Boolean {
+    if (design.isEmpty()) return true
+    val possibleTowels = towelMap[design.take(8)] ?: return false
     for (t in possibleTowels) {
         if (design.startsWith(t)) {
-            val rest = buildDesign(design.removePrefix(t)) ?: continue
-            return listOf(t) + rest
+            if (buildDesign(design.removePrefix(t))) {
+                return true
+            }
         }
     }
-    return null
+    return false
 }
 
 /*
