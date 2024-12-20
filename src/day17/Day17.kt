@@ -5,6 +5,8 @@ import java.io.File
 data class State(var a: Long, var b: Long, var c: Long, var ptr: Int, val inst: List<Int>, val outputs: MutableList<Int>)
 
 fun main() {
+
+
     val lines = File("src/day17/input.txt").readLines()
     val origState = State(
         lines[0].split(" ").last().toLong(),
@@ -14,6 +16,45 @@ fun main() {
         lines.last().split(" ").last().split(",").map { it.toInt() },
         mutableListOf(),
     )
+
+    val instructions = origState.inst
+    println(instructions)
+    //println(printOf(0b110001001))
+    println(buildA(instructions.reversed(), 0))
+}
+
+fun buildA(insts: List<Int>, A: Long): Long? {
+    if (insts.isEmpty()) return A
+    val inst = insts.first()
+    val rest = insts.drop(1)
+    for (i in 0..7) {
+        val newA = A.shl(3) + i
+        if (printOf(newA) == inst) {
+            val result = buildA(rest, newA)
+            if (result != null) {
+                return result
+            }
+        }
+    }
+    return null
+}
+
+fun printOf(A: Long): Int {
+    println(A)
+    return when (A % 8) {
+        0b000L -> 6 xor (A.shr(3) % 8).toInt()
+        0b001L -> 7 xor (A.shr(2) % 8).toInt()
+        0b010L -> 4 xor (A.shr(1) % 8).toInt()
+        0b011L -> 0b110
+        0b100L -> 2 xor (A.shr(7) % 8).toInt()
+        0b101L -> 3 xor (A.shr(6) % 8).toInt()
+        0b110L -> (A.shr(5) % 8).toInt()
+        0b111L -> 1 xor (A.shr(4) % 8).toInt()
+        else -> throw Error("Invalid number")
+    }
+}
+
+    /*
     println(lines)
     println(origState)
     /*
@@ -39,8 +80,7 @@ fun main() {
         initialA++
     }
 
-
-}
+     */
 
 fun State.comboValue(operandCode: Int): Long {
     return when (operandCode) {
