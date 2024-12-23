@@ -39,9 +39,9 @@ fun main() {
     println(directionalKeypad.toStringIndexed { _, c -> c.toString() })
     println(inputLines)
 
-    var total = 0
+    var total = 0L
     for (str in inputLines) {
-        val manualPath = shortestManualPath(numericKeypad, directionalKeypad, str, 3)
+        val manualPath = shortestManualPath(numericKeypad, directionalKeypad, str, 5)
         val numPart = str.filter { it.isDigit() }.toInt()
         println("${manualPath.length} * $numPart")
         total += manualPath.length * numPart
@@ -75,15 +75,9 @@ fun dirSearch(str: String, depth: Int): List<String> {
     val cached = dirSearchCache[str to depth]
     if (cached != null) return cached
     val parts = str.split("A").dropLast(1).map { it + "A" }
-    val partsPaths = parts.map { part ->
-        shortestTypingPaths(directionalKeypad, part, Vector(2, 0))
-    }
-    val allPaths = allAlternatives(partsPaths).map { partPaths -> partPaths.joinToString("") }
-    val recursivePaths = allPaths.flatMap { path -> dirSearch(path, depth - 1) }
-    val shortestPath = recursivePaths.minBy { it.length }
-    val shortestRecursivePaths = recursivePaths.filter { it.length == shortestPath.length }
-    dirSearchCache[str to depth] = shortestRecursivePaths
-    return shortestRecursivePaths
+    val path = parts.map { part -> shortestTypingPaths(directionalKeypad, part, Vector(2, 0)).first() }.joinToString("")
+    val recursivePaths = dirSearch(path, depth - 1)
+    return recursivePaths.take(1).also { dirSearchCache[str to depth] = it }
 }
 
 fun allAlternatives(options: List<List<String>>): List<List<String>> {
