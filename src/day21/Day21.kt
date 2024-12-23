@@ -18,18 +18,20 @@ val dirs = mapOf(
     '<' to Vector(-1, 0),
     'v' to Vector(0, 1)
 )
+lateinit var numericKeypad: Grid<Char>
+lateinit var directionalKeypad: Grid<Char>
 
-// wrong 223838
+// wrong 219254 too low
 
 fun main() {
-    val inputLines = File("src/day21/input.txt").readLines()
-    val numericKeypad = """
+    val inputLines = File("src/day21/input-mini.txt").readLines()
+    numericKeypad = """
         789
         456
         123
         X0A
     """.trimIndent().asCharGrid { it }
-    val directionalKeypad = """
+    directionalKeypad = """
         X^A
         <v>
     """.trimIndent().asCharGrid { it }
@@ -39,13 +41,12 @@ fun main() {
 
     var total = 0
     for (str in inputLines) {
-        val manualPath = shortestManualPath(numericKeypad, directionalKeypad, str, 25)
+        val manualPath = shortestManualPath(numericKeypad, directionalKeypad, str, 3)
         val numPart = str.filter { it.isDigit() }.toInt()
         println("${manualPath.length} * $numPart")
         total += manualPath.length * numPart
     }
     println("Total is $total")
-
 }
 
 fun shortestManualPath(numericKeypad: Grid<Char>, directionalKeypad: Grid<Char>, str: String, numMiddles: Int): String {
@@ -54,6 +55,7 @@ fun shortestManualPath(numericKeypad: Grid<Char>, directionalKeypad: Grid<Char>,
     val firstRobotPaths = shortestTypingPaths(numericKeypad, str, numericStartPos)
     //val secondRobotPaths = firstRobotPaths.flatMap { shortestTypingPaths(directionalKeypad, it, directionalStartPos) }
     //val manualPaths = secondRobotPaths.flatMap { shortestTypingPaths(directionalKeypad, it, directionalStartPos) }
+    /*
     var paths = firstRobotPaths
     for (i in 0..<numMiddles) {
         paths = paths.flatMap { shortestTypingPaths(directionalKeypad, it, directionalStartPos) }
@@ -62,9 +64,38 @@ fun shortestManualPath(numericKeypad: Grid<Char>, directionalKeypad: Grid<Char>,
         println(i)
         println(paths.size)
     }
+     */
+    val paths = firstRobotPaths.flatMap { dirSearch(it, numMiddles) }
     return paths.minBy { it.length }
 }
 
+val dirSearchCache: MutableMap<Pair<String, Int>, List<String>> = mutableMapOf()
+fun dirSearch(str: String, depth: Int): List<String> {
+    if (depth == 0) return listOf(str)
+    val cached = dirSearchCache[str to depth]
+    if (cached != null) return cached
+    val parts = str.split("A").dropLast(1).map { it + "A" }
+    val partsPaths = parts.map { part ->
+        shortestTypingPaths(directionalKeypad, part, Vector(2, 0))
+    }
+    val allPaths = allAlternatives(partsPaths).map { partPaths -> partPaths.joinToString("") }
+    val recursivePaths = allPaths.flatMap { path -> dirSearch(path, depth - 1) }
+    val shortestPath = recursivePaths.minBy { it.length }
+    val shortestRecursivePaths = recursivePaths.filter { it.length == shortestPath.length }
+    dirSearchCache[str to depth] = shortestRecursivePaths
+    return shortestRecursivePaths
+}
+
+fun allAlternatives(options: List<List<String>>): List<List<String>> {
+    if (options.isEmpty()) throw Error("Invalid state")
+    if (options.size == 1) {
+        return options.first().map { listOf(it) }
+    }
+    val head = options.first()
+    val rest = options.drop(1)
+    val restAlternatives = allAlternatives(rest)
+    return head.flatMap { h -> restAlternatives.map { r -> listOf(h) + r } }
+}
 
 fun shortestTypingPaths(grid: Grid<Char>, str: String, from: Vector): List<String> {
     if (str.isEmpty()) return listOf("")
