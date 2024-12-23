@@ -23,26 +23,9 @@ fun main() {
             }
         }
     )
-    println(graph.getNeighbors(graph.nodes.toList()[0]))
-
-    val antiGraph = HashmapGraph(
-        computers.associateWith { c1 ->
-            computers.filter { c2 ->
-                !graph.getNeighbors(c1).contains(c2)
-            }
-        }
-    )
-    println(antiGraph.getNeighbors(graph.nodes.toList()[0]))
-
-    val party = getBiggestParty(antiGraph, emptySet(), emptySet())
-    println(party)
-    println(party.size)
-    println(party.sorted().joinToString(","))
-
 
 
     // Part 1
-    /*
     val parties = graph.nodes.flatMap { c1 ->
         graph.getNeighbors(c1).flatMap { c2 ->
             graph.getNeighbors(c2).mapNotNull { c3 ->
@@ -54,19 +37,28 @@ fun main() {
             }
         }
     }.toSet().toList()
-    println("Parties: ${parties.size}")
 
     val partiesWithT = parties.filter { p -> p.any { c -> c.startsWith('t') } }
-    println("Parties with T: ${partiesWithT.size}")
-     */
+    println("Part 1: ${partiesWithT.size}")
+
+
+    // Part 2
+    val antiGraph = HashmapGraph(
+        computers.associateWith { c1 ->
+            computers.filter { c2 ->
+                !graph.getNeighbors(c1).contains(c2)
+            }
+        }
+    )
+    val biggestParty = getBiggestParty(antiGraph, emptySet(), antiGraph.nodes)
+    println("Part 2: ${biggestParty.sorted().joinToString(",")}")
 }
 
-fun getBiggestParty(antiGraph: HashmapGraph<String>, current: Set<String>, banned: Set<String>): Set<String> {
-    val possible = antiGraph.nodes - current.flatMap { antiGraph.getNeighbors(it) }.toSet() - banned
+fun getBiggestParty(antiGraph: HashmapGraph<String>, current: Set<String>, possible: Set<String>): Set<String> {
     if (possible.isEmpty()) return current
     for (n in possible) {
-        val biggestWithN = getBiggestParty(antiGraph, current + n, banned)
-        val biggestWithoutN = getBiggestParty(antiGraph, current, banned + n)
+        val biggestWithN = getBiggestParty(antiGraph, current + n, possible - n - antiGraph.getNeighbors(n).toSet())
+        val biggestWithoutN = getBiggestParty(antiGraph, current, possible - n)
         return if (biggestWithN.size > biggestWithoutN.size) {
             biggestWithN
         } else {
