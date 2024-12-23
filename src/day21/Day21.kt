@@ -22,7 +22,7 @@ val dirs = mapOf(
 // wrong 223838
 
 fun main() {
-    val inputLines = File("src/day21/input-mini.txt").readLines()
+    val inputLines = File("src/day21/input.txt").readLines()
     val numericKeypad = """
         789
         456
@@ -41,7 +41,7 @@ fun main() {
     for (str in inputLines) {
         val manualPath = shortestManualPath(numericKeypad, directionalKeypad, str)
         val numPart = str.filter { it.isDigit() }.toInt()
-        println(manualPath.length * numPart)
+        println("${manualPath.length} * $numPart")
         total += manualPath.length * numPart
     }
     println("Total is $total")
@@ -51,10 +51,10 @@ fun main() {
 fun shortestManualPath(numericKeypad: Grid<Char>, directionalKeypad: Grid<Char>, str: String): String {
     val numericStartPos = numericKeypad.positions.find { numericKeypad[it] == 'A' }!!
     val directionalStartPos = directionalKeypad.positions.find { directionalKeypad[it] == 'A' }!!
-    val firstRobotPath = shortestTypingPaths(numericKeypad, str, numericStartPos).minBy { it.length }
-    val secondRobotPath = shortestTypingPaths(directionalKeypad, firstRobotPath, directionalStartPos).minBy { it.length }
-    val manualPath = shortestTypingPaths(directionalKeypad, secondRobotPath, directionalStartPos).minBy { it.length }
-    return manualPath
+    val firstRobotPaths = shortestTypingPaths(numericKeypad, str, numericStartPos)
+    val secondRobotPaths = firstRobotPaths.flatMap { shortestTypingPaths(directionalKeypad, it, directionalStartPos) }
+    val manualPaths = secondRobotPaths.flatMap { shortestTypingPaths(directionalKeypad, it, directionalStartPos) }
+    return manualPaths.minBy { it.length }
 }
 
 
@@ -73,6 +73,9 @@ fun shortestSubPaths(grid: Grid<Char>, from: Vector, to: Vector): List<String> {
     val delta = to - from
     val xChar = if (delta.intX > 0) ">" else "<"
     val yChar = if (delta.intY > 0) "v" else "^"
+    if (delta.intX == 0 && delta.intY == 0) {
+        return listOf("")
+    }
     if (delta.intX == 0) {
         return listOf(yChar.repeat(abs(delta.intY)))
     }
