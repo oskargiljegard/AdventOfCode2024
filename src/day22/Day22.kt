@@ -17,7 +17,7 @@ fun main() {
     }
 
     val monkeyMaps = prices.zip(changes).map { (ps, cs) ->
-        (4..(cs.size)).map { cs.subList(it - 4, it) to ps[it] }.toMap()
+        (4..(cs.size)).map { cs.subList(it - 4, it) to ps[it] }.reversed().toMap()
     }
     val r = (-9L..9L)
     val allSequences = r.flatMap { a -> r.flatMap { b -> r.flatMap { c -> r.map { d -> listOf(a, b, c, d) } } } }
