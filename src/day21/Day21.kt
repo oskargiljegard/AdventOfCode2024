@@ -22,8 +22,9 @@ lateinit var numericKeypad: Grid<Char>
 lateinit var directionalKeypad: Grid<Char>
 
 // wrong 219254 too low
-// too low 175396398527088
+// too low  175396398527088
 // too high 301594324799984
+//          264518225304496
 
 fun main() {
     val inputLines = File("src/day21/input.txt").readLines()
@@ -78,7 +79,9 @@ fun dirSearch(str: String, depth: Int): Long {
     if (cached != null) return cached
     val parts = str.split("A").dropLast(1).map { it + "A" }
     return parts.sumOf { part ->
-        dirSearch(shortestTypingPaths(directionalKeypad, part, Vector(2, 0)).first(), depth - 1)
+        shortestTypingPaths(directionalKeypad, part, Vector(2, 0)).map { path ->
+            dirSearch(path, depth - 1)
+        }.min()
     }.also { dirSearchCache[str to depth] = it }
 }
 
