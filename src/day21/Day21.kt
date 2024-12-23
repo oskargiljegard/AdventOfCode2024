@@ -22,9 +22,11 @@ lateinit var numericKeypad: Grid<Char>
 lateinit var directionalKeypad: Grid<Char>
 
 // wrong 219254 too low
+// too low 175396398527088
+// too high 301594324799984
 
 fun main() {
-    val inputLines = File("src/day21/input-mini.txt").readLines()
+    val inputLines = File("src/day21/input.txt").readLines()
     numericKeypad = """
         789
         456
@@ -41,15 +43,15 @@ fun main() {
 
     var total = 0L
     for (str in inputLines) {
-        val manualPath = shortestManualPath(numericKeypad, directionalKeypad, str, 5)
+        val manualPath = shortestManualPath(numericKeypad, directionalKeypad, str, 25)
         val numPart = str.filter { it.isDigit() }.toInt()
-        println("${manualPath.length} * $numPart")
-        total += manualPath.length * numPart
+        println("$manualPath * $numPart")
+        total += manualPath * numPart
     }
     println("Total is $total")
 }
 
-fun shortestManualPath(numericKeypad: Grid<Char>, directionalKeypad: Grid<Char>, str: String, numMiddles: Int): String {
+fun shortestManualPath(numericKeypad: Grid<Char>, directionalKeypad: Grid<Char>, str: String, numMiddles: Int): Long {
     val numericStartPos = numericKeypad.positions.find { numericKeypad[it] == 'A' }!!
     val directionalStartPos = directionalKeypad.positions.find { directionalKeypad[it] == 'A' }!!
     val firstRobotPaths = shortestTypingPaths(numericKeypad, str, numericStartPos)
@@ -65,19 +67,19 @@ fun shortestManualPath(numericKeypad: Grid<Char>, directionalKeypad: Grid<Char>,
         println(paths.size)
     }
      */
-    val paths = firstRobotPaths.flatMap { dirSearch(it, numMiddles) }
-    return paths.minBy { it.length }
+    val paths = firstRobotPaths.map { dirSearch(it, numMiddles) }
+    return paths.min()
 }
 
-val dirSearchCache: MutableMap<Pair<String, Int>, List<String>> = mutableMapOf()
-fun dirSearch(str: String, depth: Int): List<String> {
-    if (depth == 0) return listOf(str)
+val dirSearchCache: MutableMap<Pair<String, Int>, Long> = mutableMapOf()
+fun dirSearch(str: String, depth: Int): Long {
+    if (depth == 0) return str.length.toLong()
     val cached = dirSearchCache[str to depth]
     if (cached != null) return cached
     val parts = str.split("A").dropLast(1).map { it + "A" }
-    val path = parts.map { part -> shortestTypingPaths(directionalKeypad, part, Vector(2, 0)).first() }.joinToString("")
-    val recursivePaths = dirSearch(path, depth - 1)
-    return recursivePaths.take(1).also { dirSearchCache[str to depth] = it }
+    return parts.sumOf { part ->
+        dirSearch(shortestTypingPaths(directionalKeypad, part, Vector(2, 0)).first(), depth - 1)
+    }.also { dirSearchCache[str to depth] = it }
 }
 
 fun allAlternatives(options: List<List<String>>): List<List<String>> {
