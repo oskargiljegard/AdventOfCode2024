@@ -39,7 +39,7 @@ fun main() {
 
     var total = 0
     for (str in inputLines) {
-        val manualPath = shortestManualPath(numericKeypad, directionalKeypad, str)
+        val manualPath = shortestManualPath(numericKeypad, directionalKeypad, str, 25)
         val numPart = str.filter { it.isDigit() }.toInt()
         println("${manualPath.length} * $numPart")
         total += manualPath.length * numPart
@@ -48,13 +48,21 @@ fun main() {
 
 }
 
-fun shortestManualPath(numericKeypad: Grid<Char>, directionalKeypad: Grid<Char>, str: String): String {
+fun shortestManualPath(numericKeypad: Grid<Char>, directionalKeypad: Grid<Char>, str: String, numMiddles: Int): String {
     val numericStartPos = numericKeypad.positions.find { numericKeypad[it] == 'A' }!!
     val directionalStartPos = directionalKeypad.positions.find { directionalKeypad[it] == 'A' }!!
     val firstRobotPaths = shortestTypingPaths(numericKeypad, str, numericStartPos)
-    val secondRobotPaths = firstRobotPaths.flatMap { shortestTypingPaths(directionalKeypad, it, directionalStartPos) }
-    val manualPaths = secondRobotPaths.flatMap { shortestTypingPaths(directionalKeypad, it, directionalStartPos) }
-    return manualPaths.minBy { it.length }
+    //val secondRobotPaths = firstRobotPaths.flatMap { shortestTypingPaths(directionalKeypad, it, directionalStartPos) }
+    //val manualPaths = secondRobotPaths.flatMap { shortestTypingPaths(directionalKeypad, it, directionalStartPos) }
+    var paths = firstRobotPaths
+    for (i in 0..<numMiddles) {
+        paths = paths.flatMap { shortestTypingPaths(directionalKeypad, it, directionalStartPos) }
+        val shortestPath = paths.minBy { it.length }
+        paths = paths.filter { it.length == shortestPath.length }
+        println(i)
+        println(paths.size)
+    }
+    return paths.minBy { it.length }
 }
 
 
