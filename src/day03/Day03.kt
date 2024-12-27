@@ -7,6 +7,7 @@ fun main() {
     val text = File("src/day03/input.txt").readText()
     val r = "mul\\((\\d+),(\\d+)\\)".toRegex()
     val res = r.findAll(text);
+    println("part 1")
     println(res.map {
         val (a,b) = it.destructured
         return@map a.toInt() * b.toInt();
@@ -24,7 +25,6 @@ fun main() {
                 enabled = false;
             }
             else -> {
-                println(match.groupValues[0])
                 val (a,b) = r.findAll(match.groupValues[0]).first().destructured
                 if (enabled) {
                     sum += a.toInt() * b.toInt()
@@ -32,6 +32,7 @@ fun main() {
             }
         }
     }
+    println("part 2")
     println(sum);
 }
 
