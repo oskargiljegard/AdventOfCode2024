@@ -6,7 +6,9 @@ import kotlin.math.abs
 fun main() {
     val lines = File("src/day02/input.txt").readLines()
     val parsed = lines.map { line -> line.split(" ").map { it.toInt() } }
+    println("part 1")
     println(parsed.count { safe(it) })
+    println("part 2")
     println(parsed.count { partialSafe(it) })
 }
 
